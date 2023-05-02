@@ -215,27 +215,34 @@ public class disassemble {
         int temp4 = 0;
         
         temp1 = byteArray[start];						 //byte 1 00010111
-        temp2 = Byte.toUnsignedInt(byteArray[start + 1]);//byte 2 11111111
-        temp3 = Byte.toUnsignedInt(byteArray[start + 2]);//byte 3 11111111
-        temp4 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4 11100110
+        temp2 = byteArray[start + 1];//byte 2 11111111
+        temp3 = byteArray[start + 2];//byte 3 11111111
+        temp4 = byteArray[start + 3];//byte 4 11100110
         temp1  = (byte) (temp1 & ((1 << 2) - 1));
-   
-        System.out.println(temp1 +  " temp1");
-        System.out.println(temp2 +  " temp2");
-        System.out.println(temp3 +  " temp3");
-        System.out.println(temp4 +  " temp4");
-        temp1 = temp1 << 24;     
-        temp2 = temp2 << 16;
-        temp3 = temp3 << 8;
-        System.out.println(temp1 +  " temp1");
-        System.out.println(temp2 +  " temp2");
-        System.out.println(temp3 +  " temp3");
-        System.out.println(temp4 +  " temp4");
-        BR_address = temp1 + temp2 + temp3 + temp4;
-        		
-        System.out.println(BR_address +"= -9?");
-
-       
+        
+        if(temp1 == 3 || temp1 == 2) {
+	        BR_address = BR_address << 2;
+	        BR_address += temp1; //111...(11)temp1
+	        System.out.println("1:" + BR_address );
+	        BR_address = BR_address << 8; //room for temp2
+	        BR_address = BR_address | temp2;
+	        System.out.println("2:"+BR_address);
+	        BR_address = BR_address << 8;
+	        BR_address = BR_address | temp3;
+	        System.out.println("3:"+BR_address);
+	        BR_address = BR_address << 8;
+	        BR_address = BR_address | temp4; //11111111
+	        								 //11100110
+	        System.out.println(BR_address +"= -26?");
+        }else {
+        	temp2 = Byte.toUnsignedInt(byteArray[start + 1]);//byte 2
+            temp3 = Byte.toUnsignedInt(byteArray[start + 2]);//byte 3
+            temp4 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4
+            temp1 = temp1 << 24;
+            temp2 = temp2 << 16;
+            temp3 = temp3 << 8;
+            BR_address = temp1 + temp2 + temp3 + temp4;
+        }
         return new bType(BR_address);
     }
     private static cbType setCBType(byte[] byteArray, int start){
@@ -396,7 +403,7 @@ public class disassemble {
                         }
 
                         if(branch_address != -1){   //COND_BR_address is nothing, maybe change it to 0?
-                            instruction += ", " + branch_address; 
+                            instruction += branch_address; 
                         }
                         break; 
                     }
@@ -517,7 +524,7 @@ public class disassemble {
                         rm = inst.rm;
                         shamt = inst.shamt;
                         rn = inst.rn;
-                        instruction = "BR X" + rt;
+                        instruction = "BR X" + 30;
                         break; 
                     }
                     else if(opCode == 2046){    //TO-DO: The rest of the instruction
@@ -848,3 +855,4 @@ public class disassemble {
 	    			byte 1 + 2 + 3 + 4 = right?
     */
 }
+
