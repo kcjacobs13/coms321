@@ -17,15 +17,15 @@ public class disassemble {
 		System.out.println(fileContents.toString());
         int bit = fileContents[0];
         System.out.println(getBinaryString(fileContents[0]));
-        // File file = new File("decoded.legv8asm");
-        // try {
-        //     file.createNewFile();
-        //     FileWriter writer = new FileWriter(file);
-        //     writer.write(decoder(fileContents));
-        //     writer.close();
-        // } catch (IOException e) {
-        //     System.out.println("FUCK");
-        // }
+        File file = new File("decoded.legv8asm");
+        try {
+             file.createNewFile();
+             FileWriter writer = new FileWriter(file);
+             writer.write(decoder(fileContents));
+             writer.close();
+        } catch (IOException e) {
+        	System.out.println("FUCK");
+         }
 
         //
         byte[] example = new byte[8];
@@ -124,8 +124,7 @@ public class disassemble {
         int temp2 = 0;
         
         temp1 = Byte.toUnsignedInt( byteArray[start + 1]);//byte2
-        temp1 = temp1 << 3;
-        temp1 = temp1 >> 3;
+        temp1  = (byte) (temp1 & ((1 << 5) - 1));
         Rm  =  temp1;
 
         temp1 = Byte.toUnsignedInt(byteArray[start + 2]);//byte3
@@ -134,13 +133,13 @@ public class disassemble {
 
         temp1 = Byte.toUnsignedInt(byteArray[start + 2]); //byte 3
         temp2 = Byte.toUnsignedInt(byteArray[start + 3]); //byte 4
+        temp1  = (byte) (temp1 & ((1 << 2) - 1));
         temp1 = temp1 << 3;
         temp2 = temp2 >> 5;
         Rn = temp1  + temp2;
 
         temp1 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4
-        temp1 = temp1 << 3;
-        temp1 = temp1 >> 3;
+        temp1  = (byte) (temp1 & ((1 << 5) - 1));
         Rd = temp1;
 
        return new rType(Rm,Shamt,Rn,Rd);
@@ -161,15 +160,16 @@ public class disassemble {
         
         temp1 = Byte.toUnsignedInt(byteArray[start + 2]); //byte 3
         temp2 = Byte.toUnsignedInt(byteArray[start + 3]); //byte 4
-        temp1 = temp1 << 6;
-        temp1 = temp1 >> 6;
         temp1 = temp1 << 3;
+        temp1  = (byte) (temp1 & ((1 << 5) - 1));
         temp2 = temp2 >> 5;
         Rn = temp1 + temp2;
-
+        
+        temp1 = 0;
         temp1 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4
-        temp1 = temp1 << 3;
-        temp1 = temp1 >> 3;
+        //temp1 = temp1 << 3;
+        //temp1 = temp1 >> 3;
+        temp1  = (byte) (temp1 & ((1 << 5) - 1));
         Rt = temp1;
 
         return new iType(ALU_immediate, Rn, Rt);
@@ -182,29 +182,27 @@ public class disassemble {
         int temp1 = 0;
         int temp2 = 0;
         
-        temp1 = Byte.toUnsignedInt(byteArray[start + 1]);//byte 2
+        temp1 = Byte.toUnsignedInt(byteArray[start + 1]); //byte 2
         temp2 = Byte.toUnsignedInt(byteArray[start + 2]);//byte 3
-        temp1 = temp1 << 3;
+        temp1  = (byte) (temp1 & ((1 << 5) - 1));
         temp1 *= 2;
         temp2 = temp2 >> 4;
         DT_address = temp1 + temp2;
 
         temp1 = Byte.toUnsignedInt(byteArray[start + 2]);//byte 3
-        temp1 = temp1 << 4;
-        temp1 = temp1 >> 6;
+        temp1 = temp1 >> 2;
+        temp1  = (byte) (temp1 & ((1 << 2) - 1));
         op = temp1;
         
         temp1 = Byte.toUnsignedInt(byteArray[start + 2]);//byte 3
         temp2 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4
-        temp1 = temp1 << 6;
-        temp1 = temp1 >> 6;
+        temp1  = (byte) (temp1 & ((1 << 2) - 1));
         temp1 = temp1 << 3;
         temp2 = temp2 >> 5;
         Rn = temp1 + temp2;
 
         temp1 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4
-        temp1 = temp1 << 3;
-        temp1 = temp1 >> 3;
+        temp1  = (byte) (temp1 & ((1 << 5) - 1));
         Rd = temp1;
 
         return new dType(DT_address, op, Rn, Rd);
@@ -216,16 +214,26 @@ public class disassemble {
         int temp3 = 0;
         int temp4 = 0;
         
-        temp1 = Byte.toUnsignedInt(byteArray[start]);//byte 1
-        temp2 = Byte.toUnsignedInt(byteArray[start + 1]);//byte 2
-        temp3 = Byte.toUnsignedInt(byteArray[start + 2]);//byte 3
-        temp4 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4
-
-        temp1 = temp1 << 6;
-        temp1 *= Math.pow(2, 20);
-        temp2 *= Math.pow(2, 16);
-        temp3 *= Math.pow(2,8);
+        temp1 = byteArray[start];						 //byte 1 00010111
+        temp2 = Byte.toUnsignedInt(byteArray[start + 1]);//byte 2 11111111
+        temp3 = Byte.toUnsignedInt(byteArray[start + 2]);//byte 3 11111111
+        temp4 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4 11100110
+        temp1  = (byte) (temp1 & ((1 << 2) - 1));
+   
+        System.out.println(temp1 +  " temp1");
+        System.out.println(temp2 +  " temp2");
+        System.out.println(temp3 +  " temp3");
+        System.out.println(temp4 +  " temp4");
+        temp1 = temp1 << 24;     
+        temp2 = temp2 << 16;
+        temp3 = temp3 << 8;
+        System.out.println(temp1 +  " temp1");
+        System.out.println(temp2 +  " temp2");
+        System.out.println(temp3 +  " temp3");
+        System.out.println(temp4 +  " temp4");
         BR_address = temp1 + temp2 + temp3 + temp4;
+        		
+        System.out.println(BR_address +"= -9?");
 
        
         return new bType(BR_address);
@@ -237,18 +245,17 @@ public class disassemble {
         int temp2 = 0;
         int temp3 = 0;
         
-        temp1 = Byte.toUnsignedInt(byteArray[start + 1]);//byte 2
+        temp1 = byteArray[start + 1];//byte 2
         temp2 = Byte.toUnsignedInt(byteArray[start + 2]);//byte 3
         temp3 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4
-        temp1 *= Math.pow(2,11);
-        temp2 *= Math.pow(2,3);
+        temp1 = temp1 << 11;
+        temp2 = temp2 << 3;
         temp3 = temp3 >> 5;
         COND_BR_address = temp1 + temp2 + temp3;
 
 
         temp1 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4
-        temp1 = temp1 << 3;
-        temp1 = temp1 >> 3;
+        temp1  = (byte) (temp1 & ((1 << 5) - 1));
         Rt = temp1;
         return new cbType(COND_BR_address, Rt);
     }
@@ -281,7 +288,7 @@ public class disassemble {
                     temp1 = temp1<<2;
                     temp1 *= Math.pow(2, -2);
                     opCode = temp1;
-                    System.out.println("6 opcode: " + opCode);
+                    //System.out.println("6 opcode: " + opCode);
                     //6 opCodes
                     if(opCode == 5){                              
                         //This is B, not B.cond, that is a different one
@@ -306,7 +313,7 @@ public class disassemble {
                 else if(v==1){
                     int temp1 = Byte.toUnsignedInt(byteArray[i]);//byte 1
                     opCode = temp1;
-                    System.out.println("8 opCode: " + opCode);
+                   // System.out.println("8 opCode: " + opCode);
                     //8 opCodes
                     if(opCode == 180){     
                         //signed = -76
@@ -400,7 +407,7 @@ public class disassemble {
                     temp2 = temp2 >>6;
                     temp1 *= Math.pow(2, 2);
                     opCode = temp1 + temp2;
-                    System.out.println("10 opCode: " + opCode);
+                   // System.out.println("10 opCode: " + opCode);
                     //10 opCodes
                     if(opCode == 580){     //TO-DO: Find rm, rn, and immediate
                         //signed is -444
@@ -410,7 +417,7 @@ public class disassemble {
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
-                        instruction = "ADDI X" + rd + ", X" + rn + ", " + imm;
+                        instruction = "ADDI X" + rd + ", X" + rn + ", #" + imm;
                         break; 
                     }
                     else if(opCode == 584){     //TO-DO: Find rd, rn, and immediate        
@@ -421,7 +428,7 @@ public class disassemble {
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
-                        instruction = "ANDI X" + rd + ", X" + rn + ", " + imm;
+                        instruction = "ANDI X" + rd + ", X" + rn + ", #" + imm;
                         break; 
                     }
                     else if(opCode == 840){     //TO-DO: Find rd, rn, and immediate
@@ -432,7 +439,7 @@ public class disassemble {
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
-                        instruction = "EORI X" + rd + ", X" + rn + ", " + imm; 
+                        instruction = "EORI X" + rd + ", X" + rn + ", #" + imm; 
                         break; 
                     }
                     else if(opCode == 712){     //TO-DO: Find rd, rn, and immediate
@@ -443,7 +450,7 @@ public class disassemble {
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
-                        instruction = "ORRI X" + rd + ", X" + rn + ", " + imm;
+                        instruction = "ORRI X" + rd + ", X" + rn + ", #" + imm;
                         break; 
                     }
                     else if(opCode == 836){     //TO-DO: Find rd, rn, and immediate
@@ -454,7 +461,7 @@ public class disassemble {
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
-                        instruction = "SUBI X" + rd + ", X" + rn + ", " + imm;
+                        instruction = "SUBI X" + rd + ", X" + rn + ", #" + imm;
                         break; 
                     }
                     else if(opCode == 964){     //TO-DO: Find rd, rn, and immediate and Set flags(?)
@@ -465,7 +472,7 @@ public class disassemble {
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
-                        instruction = "SUBIS X" + rd + ", X" + rn + ", " + imm;
+                        instruction = "SUBIS X" + rd + ", X" + rn + ", #" + imm;
                         break; 
                     }    
                 }
@@ -475,7 +482,7 @@ public class disassemble {
                     temp2 = temp2 >>5;
                     temp1 *= Math.pow(2, 3);
                     opCode = temp1 + temp2;
-                    System.out.println("11 opCode: " + opCode);
+                   // System.out.println("11 opCode: " + opCode);
                     //11 opCodes
                     if(opCode == 1112){    //TO-DO: Find rd, rm, shamt(?) and rn
                         //signed is -936
@@ -557,7 +564,7 @@ public class disassemble {
                         rt = inst.rt;
                         rn = inst.rn;
                         dt_address = inst.dt_address;
-                        instruction = "LDUR X" + rt + ", [X" + rn + "," + dt_address + "]";
+                        instruction = "LDUR X" + rt + ", [X" + rn + ", #" + dt_address + "]";
                         break; 
                     }
                     else if(opCode == 1691){     //TO-DO: Find rd, rm(?), shamt and rn
@@ -568,7 +575,7 @@ public class disassemble {
                         rt = inst.rt;
                         rn = inst.rn;
                         dt_address = inst.dt_address;
-                        instruction = "LSL X" + rd + ", X" + rn + ", " + shamt;
+                        instruction = "LSL X" + rd + ", X" + rn + ", #" + shamt;
                         break; 
                     }
                     else if(opCode == 1690){     //TO-DO: Find rd, rm(?), shamt and rn
@@ -580,7 +587,7 @@ public class disassemble {
                         rm = inst.rm;
                         shamt = inst.shamt;
                         rn = inst.rn;
-                        instruction = "LSR X" + rd + ", X" + rn + ", " + shamt;
+                        instruction = "LSR X" + rd + ", X" + rn + ", #" + shamt;
                         break; 
                     }
                     else if(opCode == 1360){     //TO-DO: Find rd, rm, shamt(?) and rn
@@ -603,7 +610,7 @@ public class disassemble {
                         rt = inst.rt;
                         rn = inst.rn;
                         dt_address = inst.dt_address;
-                        instruction = "STUR X"+ rt + ", [X" + rn + "," + dt_address + "]";
+                        instruction = "STUR X"+ rt + ", [X" + rn + ",#" + dt_address + "]";
                         break; 
                     }
                     else if(opCode == 1624){     //TO-DO: Find rd, rm, shamt(?) and rn
@@ -670,7 +677,7 @@ public class disassemble {
                 
 
             }
-            System.out.println("Instruction: " + instruction);
+            //System.out.println("Instruction: " + instruction);
             
             totalInstruction += "\n" + instruction;
             instruction = "";
