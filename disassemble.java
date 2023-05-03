@@ -24,43 +24,8 @@ public class disassemble {
              writer.write(decoder(fileContents));
              writer.close();
         } catch (IOException e) {
-        	System.out.println("FUCK");
+        	System.out.println("");
          }
-
-        //
-        byte[] example = new byte[8];
-        example[0] = (byte)0x8b;
-        example[1] = (byte)0x03;
-        example[2] = (byte)0x00;
-        example[3] = (byte)0x41;
-        
-
-
-        //ADD X1, X2, X3
-        //opCode = 10001011000
-        //rm = 00011
-        //shamt = 000000
-        //rn = 00010
-        //rd = 00001
-        //instruction = 10001011 00000011 00000000 01000001
-
-        example[4] = (byte)0x91;
-        example[5] = (byte)0x00;
-        example[6] = (byte)0x18;
-        example[7] = (byte)0x41;
-        //ADDI x1, x2, #6
-        //opCode = 1001000100
-        //alu_immediate = 000000000110
-        //rn = 00010
-        //rd = 00001
-        //instruction = 10010001 00000000 00011000 01000001
-
-        System.out.println(decoder(example));
-        /*
-        byte[] test = {50,25,0,0};
-        rType fuck = setRType(test, 0);
-        System.out.println(fuck.rm);
-        */
 	}
     
     static class rType{
@@ -114,7 +79,6 @@ public class disassemble {
 	private static String getBinaryString(byte b) {
 		return String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0');
 	}
-
     private static rType setRType(byte[] byteArray, int start){
         int Rm = 0;
         int Shamt = 0;
@@ -268,7 +232,6 @@ public class disassemble {
     }
     private static String decoder(byte[] byteArray){
         
-        
         String instruction = "";
         //We would have to figure this out each iteration
         //Default is -1, -1 should never actually be seen or else it's wrong
@@ -281,7 +244,7 @@ public class disassemble {
         int shamt = -1; 
         int imm = -1; 
         int dt_address = -1;
-        int instructionCount = 0;
+        int instructionCount = 1;
         String totalInstruction = "";
         //NOTE: Syntax of the way the instruction is written is different from the
         //      format of the way the code is stored. For example, ADD is written
@@ -302,18 +265,18 @@ public class disassemble {
                         //B instruction
                         //Format: opCode, BR_address 
                         
-                        bType inst = setBType(byteArray, instructionCount);
+                        bType inst = setBType(byteArray, i);
                         branch_address = inst.branch_address;
-                        instruction = "B " + branch_address;
+                        instruction = "B " + "line_" +(instructionCount+branch_address);
                         break; 
                     }
                     else if(opCode == 37){                
                         //signed = -27
                         //BL instruction
                         //Format: opCode, BR_address
-                        bType inst = setBType(byteArray, instructionCount);
+                        bType inst = setBType(byteArray, i);
                         branch_address = inst.branch_address;
-                        instruction = "BL " + branch_address; 
+                        instruction = "BL " + "line_" +(instructionCount+branch_address); 
                         break; 
                     }
                 }
@@ -326,11 +289,11 @@ public class disassemble {
                         //signed = -76
                         //CBZ instruction       
                         //Format: opCode, COND_BR_address, Rt
-                        cbType inst = setCBType(byteArray, instructionCount);
+                        cbType inst = setCBType(byteArray, i);
                         rt = inst.rt;
                         branch_address = inst.branch_address;
                         if(branch_address != -1){   //COND_BR_address is nothing, maybe change it to 0?
-                            instruction = "CBZ X" + rt + ", " + branch_address;
+                            instruction = "CBZ X" + rt + ", " + "line_" +(instructionCount+branch_address);
                         }
                         else{
                             instruction = "CBZ X" + rt;
@@ -341,11 +304,11 @@ public class disassemble {
                         //signed = -75
                         //CBNZ instruction
                         //Format: opCode, COND_BR_address, Rt
-                        cbType inst = setCBType(byteArray, instructionCount);
+                        cbType inst = setCBType(byteArray, i);
                         rt = inst.rt;
                         branch_address = inst.branch_address;
                         if(branch_address != -1){   //COND_BR_address is nothing, maybe change it to 0?
-                            instruction = "CBNZ X" + rt + ", " + branch_address; 
+                            instruction = "CBNZ X" + rt + ", " + "line_" +(instructionCount+branch_address); 
                         }
                         else{
                             instruction = "CBNZ X" + rt;
@@ -356,7 +319,7 @@ public class disassemble {
                         //B.cond instruction
                         //Rt is the cond
                         //Format: opCode, COND_BR_address, Rt
-                        cbType inst = setCBType(byteArray, instructionCount);
+                        cbType inst = setCBType(byteArray, i);
                         rt = inst.rt;
                         branch_address = inst.branch_address;
                         if(rt == 0){
@@ -403,7 +366,7 @@ public class disassemble {
                         }
 
                         if(branch_address != -1){   //COND_BR_address is nothing, maybe change it to 0?
-                            instruction += branch_address; 
+                            instruction += "line_" +  (instructionCount + branch_address); 
                         }
                         break; 
                     }
@@ -420,7 +383,7 @@ public class disassemble {
                         //signed is -444
                         //ADDI instruction
                         //Format: opCode, imm, rn, rd
-                        iType inst = setIType(byteArray, instructionCount);
+                        iType inst = setIType(byteArray, i);
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
@@ -431,7 +394,7 @@ public class disassemble {
                         //signed = -440
                         //ANDI instruction
                         //Format: opCode, imm, rn, rd
-                        iType inst = setIType(byteArray, instructionCount);
+                        iType inst = setIType(byteArray, i);
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
@@ -442,7 +405,7 @@ public class disassemble {
                         //signed = -184
                         //EORI instruction
                         //Format: opCode, imm, rn, rd
-                        iType inst = setIType(byteArray, instructionCount);
+                        iType inst = setIType(byteArray, i);
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
@@ -453,7 +416,7 @@ public class disassemble {
                         //siged = -312
                         //ORRI instruction
                         //Format: opCode, imm, rn, rd
-                        iType inst = setIType(byteArray, instructionCount);
+                        iType inst = setIType(byteArray, i);
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
@@ -464,7 +427,7 @@ public class disassemble {
                         //signed = -188
                         //SUBI instruction
                         //Format: opCode, imm, rn, rd
-                        iType inst = setIType(byteArray, instructionCount);
+                        iType inst = setIType(byteArray, i);
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
@@ -475,7 +438,7 @@ public class disassemble {
                         //signed = -60
                         //SUBIS instruction
                         //Format: opCode, imm, rn, rd
-                        iType inst = setIType(byteArray, instructionCount);
+                        iType inst = setIType(byteArray, i);
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
@@ -495,7 +458,7 @@ public class disassemble {
                         //signed is -936
                         //ADD instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rd = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
@@ -507,7 +470,7 @@ public class disassemble {
                         //signed is -944
                         //AND instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rd = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
@@ -519,19 +482,19 @@ public class disassemble {
                         //signd = -336
                         //BR instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rt = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
                         rn = inst.rn;
-                        instruction = "BR X" + 30;
+                        instruction = "BR X" + rn;
                         break; 
                     }
                     else if(opCode == 2046){    //TO-DO: The rest of the instruction
                         //signed = -2
                         //DUMP instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rd = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
@@ -543,7 +506,7 @@ public class disassemble {
                         //signed -432
                         //EOR instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rd = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
@@ -555,7 +518,7 @@ public class disassemble {
                         //signed = -1
                         //HALT instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rd = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
@@ -567,7 +530,7 @@ public class disassemble {
                         //signed = -62
                         //LDUR instruction
                         //Format: opCode, dt_address, rn, rt
-                        dType inst = setDType(byteArray, instructionCount);
+                        dType inst = setDType(byteArray, i);
                         rt = inst.rt;
                         rn = inst.rn;
                         dt_address = inst.dt_address;
@@ -578,7 +541,7 @@ public class disassemble {
                         //signed = -357
                         //LSL instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        dType inst = setDType(byteArray, instructionCount);
+                        dType inst = setDType(byteArray, i);
                         rt = inst.rt;
                         rn = inst.rn;
                         dt_address = inst.dt_address;
@@ -589,7 +552,7 @@ public class disassemble {
                         //signed = -358
                         //LSR instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rd = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
@@ -601,7 +564,7 @@ public class disassemble {
                         //signed -688
                         //ORR instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rd = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
@@ -613,7 +576,7 @@ public class disassemble {
                         //signed -64
                         //STUR instruction
                         //Format: opCode, dt_address, rn, rt
-                        dType inst = setDType(byteArray, instructionCount);
+                        dType inst = setDType(byteArray, i);
                         rt = inst.rt;
                         rn = inst.rn;
                         dt_address = inst.dt_address;
@@ -624,7 +587,7 @@ public class disassemble {
                         //signed -424
                         //SUB instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rd = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
@@ -636,7 +599,7 @@ public class disassemble {
                         //signed -168
                         //SUBS instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rd = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
@@ -648,7 +611,7 @@ public class disassemble {
                         //signed = -808
                         //MUL instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rd = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
@@ -660,19 +623,19 @@ public class disassemble {
                         //signed -3
                         //PRNT instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rd = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
                         rn = inst.rn;
-                        instruction = "PRNT";
+                        instruction = "PRNT" + " X"+rd;
                         break; 
                     }
                     else if(opCode == 2044){     //TO-DO: Find rd, rm, shamt(?) and rn
                         //signed -4
                         //PRNL instruction
                         //Format: opCode, rm, shamt, rn, rd
-                        rType inst = setRType(byteArray, instructionCount);
+                        rType inst = setRType(byteArray, i);
                         rd = inst.rd;
                         rm = inst.rm;
                         shamt = inst.shamt;
@@ -685,10 +648,10 @@ public class disassemble {
 
             }
             //System.out.println("Instruction: " + instruction);
-            
+            totalInstruction += "\n" + "line_" + instructionCount +":";
             totalInstruction += "\n" + instruction;
             instruction = "";
-            instructionCount = instructionCount+4; //I KNOW THIS IS REDUNDANT, I DON'T WANT TO CHANGE IT
+            instructionCount++; //I KNOW THIS IS REDUNDANT, I DON'T WANT TO CHANGE IT, not anymore : )
         }
         return totalInstruction;
     }
