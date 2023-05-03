@@ -14,9 +14,9 @@ public class disassemble {
 	public static void main(String[] args) throws IOException {
 		Path path = Paths.get("assignment1.legv8asm.machine");
 		byte[] fileContents =  Files.readAllBytes(path);
-		System.out.println(fileContents.toString());
+
         int bit = fileContents[0];
-        System.out.println(getBinaryString(fileContents[0]));
+ 
         File file = new File("decoded.legv8asm");
         try {
             file.createNewFile();
