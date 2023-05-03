@@ -1,4 +1,3 @@
-
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -14,9 +13,9 @@ import java.util.Scanner;
 
 public class disassemble {
 	public static void main(String[] args) throws IOException {
-		Scanner sc=new Scanner(System.in);  
-		Path path = Paths.get(sc.next());
+		Path path = Paths.get(args[0]);
 		byte[] fileContents =  Files.readAllBytes(path);
+		/*
         int bit = fileContents[0];
         File file = new File("decoded.legv8asm");
         try {
@@ -27,8 +26,10 @@ public class disassemble {
         } catch (IOException e) {
         	System.out.println("");
          }
+         */
+        System.out.println(decoder(fileContents));
 	}
-    
+
     static class rType{
         int rm;
         int shamt;
@@ -87,7 +88,7 @@ public class disassemble {
         int Rd = 0;
         int temp1 = 0;
         int temp2 = 0;
-        
+
         temp1 = Byte.toUnsignedInt( byteArray[start + 1]);//byte2
         temp1  = (byte) (temp1 & ((1 << 5) - 1));
         Rm  =  temp1;
@@ -115,21 +116,21 @@ public class disassemble {
         int Rt = 0;
         int temp1 = 0;
         int temp2 = 0;
-        
+
         temp1 = Byte.toUnsignedInt(byteArray[start + 1]); //byte 2
         temp2 = Byte.toUnsignedInt(byteArray[start + 2]); //byte 3
         temp1 = temp1 << 2;
         temp2 = temp2 >> 2;
         temp1 *= Math.pow(2, 4);
         ALU_immediate = temp1 + temp2;
-        
+
         temp1 = Byte.toUnsignedInt(byteArray[start + 2]); //byte 3
         temp2 = Byte.toUnsignedInt(byteArray[start + 3]); //byte 4
         temp1 = temp1 << 3;
         temp1  = (byte) (temp1 & ((1 << 5) - 1));
         temp2 = temp2 >> 5;
         Rn = temp1 + temp2;
-        
+
         temp1 = 0;
         temp1 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4
         //temp1 = temp1 << 3;
@@ -146,7 +147,7 @@ public class disassemble {
         int Rd = 0;
         int temp1 = 0;
         int temp2 = 0;
-        
+
         temp1 = Byte.toUnsignedInt(byteArray[start + 1]); //byte 2
         temp2 = Byte.toUnsignedInt(byteArray[start + 2]);//byte 3
         temp1  = (byte) (temp1 & ((1 << 5) - 1));
@@ -158,7 +159,7 @@ public class disassemble {
         temp1 = temp1 >> 2;
         temp1  = (byte) (temp1 & ((1 << 2) - 1));
         op = temp1;
-        
+
         temp1 = Byte.toUnsignedInt(byteArray[start + 2]);//byte 3
         temp2 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4
         temp1  = (byte) (temp1 & ((1 << 2) - 1));
@@ -178,13 +179,13 @@ public class disassemble {
         int temp2 = 0;
         int temp3 = 0;
         int temp4 = 0;
-        
+
         temp1 = byteArray[start];						 //byte 1 00010111
         temp2 = byteArray[start + 1];//byte 2 11111111
         temp3 = byteArray[start + 2];//byte 3 11111111
         temp4 = byteArray[start + 3];//byte 4 11100110
         temp1  = (byte) (temp1 & ((1 << 2) - 1));
-        
+
         if(temp1 == 3 || temp1 == 2) {
 	        BR_address = BR_address << 2;
 	        BR_address += temp1; //111...(11)temp1
@@ -212,7 +213,7 @@ public class disassemble {
         int temp1 = 0;
         int temp2 = 0;
         int temp3 = 0;
-        
+
         temp1 = byteArray[start + 1];//byte 2
         temp2 = Byte.toUnsignedInt(byteArray[start + 2]);//byte 3
         temp3 = Byte.toUnsignedInt(byteArray[start + 3]);//byte 4
@@ -228,18 +229,18 @@ public class disassemble {
         return new cbType(COND_BR_address, Rt);
     }
     private static String decoder(byte[] byteArray){
-        
+
         String instruction = "";
         //We would have to figure this out each iteration
         //Default is -1, -1 should never actually be seen or else it's wrong
-        int opCode = -1; 
-        int rm = -1; 
-        int rd = -1; 
+        int opCode = -1;
+        int rm = -1;
+        int rd = -1;
         int rn = -1;
-        int rt = -1; 
-        int branch_address = -1; 
-        int shamt = -1; 
-        int imm = -1; 
+        int rt = -1;
+        int branch_address = -1;
+        int shamt = -1;
+        int imm = -1;
         int dt_address = -1;
         int instructionCount = 1;
         String totalInstruction = "";
@@ -257,24 +258,24 @@ public class disassemble {
                     opCode = temp1;
                     //System.out.println("6 opcode: " + opCode);
                     //6 opCodes
-                    if(opCode == 5){                              
+                    if(opCode == 5){
                         //This is B, not B.cond, that is a different one
                         //B instruction
-                        //Format: opCode, BR_address 
-                        
+                        //Format: opCode, BR_address
+
                         bType inst = setBType(byteArray, i);
                         branch_address = inst.branch_address;
                         instruction = "B " + "line_" +(instructionCount+branch_address);
-                        break; 
+                        break;
                     }
-                    else if(opCode == 37){                
+                    else if(opCode == 37){
                         //signed = -27
                         //BL instruction
                         //Format: opCode, BR_address
                         bType inst = setBType(byteArray, i);
                         branch_address = inst.branch_address;
-                        instruction = "BL " + "line_" +(instructionCount+branch_address); 
-                        break; 
+                        instruction = "BL " + "line_" +(instructionCount+branch_address);
+                        break;
                     }
                 }
                 else if(v==1){
@@ -282,9 +283,9 @@ public class disassemble {
                     opCode = temp1;
                    // System.out.println("8 opCode: " + opCode);
                     //8 opCodes
-                    if(opCode == 180){     
+                    if(opCode == 180){
                         //signed = -76
-                        //CBZ instruction       
+                        //CBZ instruction
                         //Format: opCode, COND_BR_address, Rt
                         cbType inst = setCBType(byteArray, i);
                         rt = inst.rt;
@@ -295,9 +296,9 @@ public class disassemble {
                         else{
                             instruction = "CBZ X" + rt;
                         }
-                        break; 
+                        break;
                     }
-                    else if(opCode == 181){      
+                    else if(opCode == 181){
                         //signed = -75
                         //CBNZ instruction
                         //Format: opCode, COND_BR_address, Rt
@@ -305,14 +306,14 @@ public class disassemble {
                         rt = inst.rt;
                         branch_address = inst.branch_address;
                         if(branch_address != -1){   //COND_BR_address is nothing, maybe change it to 0?
-                            instruction = "CBNZ X" + rt + ", " + "line_" +(instructionCount+branch_address); 
+                            instruction = "CBNZ X" + rt + ", " + "line_" +(instructionCount+branch_address);
                         }
                         else{
                             instruction = "CBNZ X" + rt;
                         }
-                        break; 
+                        break;
                     }
-                    else if (opCode == 84){   
+                    else if (opCode == 84){
                         //B.cond instruction
                         //Rt is the cond
                         //Format: opCode, COND_BR_address, Rt
@@ -363,9 +364,9 @@ public class disassemble {
                         }
 
                         if(branch_address != -1){   //COND_BR_address is nothing, maybe change it to 0?
-                            instruction += "line_" +  (instructionCount + branch_address); 
+                            instruction += "line_" +  (instructionCount + branch_address);
                         }
-                        break; 
+                        break;
                     }
                 }
                 else if(v==2){
@@ -385,9 +386,9 @@ public class disassemble {
                         rn = inst.rn;
                         imm = inst.imm;
                         instruction = "ADDI X" + rd + ", X" + rn + ", #" + imm;
-                        break; 
+                        break;
                     }
-                    else if(opCode == 584){     //TO-DO: Find rd, rn, and immediate        
+                    else if(opCode == 584){     //TO-DO: Find rd, rn, and immediate
                         //signed = -440
                         //ANDI instruction
                         //Format: opCode, imm, rn, rd
@@ -396,7 +397,7 @@ public class disassemble {
                         rn = inst.rn;
                         imm = inst.imm;
                         instruction = "ANDI X" + rd + ", X" + rn + ", #" + imm;
-                        break; 
+                        break;
                     }
                     else if(opCode == 840){     //TO-DO: Find rd, rn, and immediate
                         //signed = -184
@@ -406,8 +407,8 @@ public class disassemble {
                         rd = inst.rd;
                         rn = inst.rn;
                         imm = inst.imm;
-                        instruction = "EORI X" + rd + ", X" + rn + ", #" + imm; 
-                        break; 
+                        instruction = "EORI X" + rd + ", X" + rn + ", #" + imm;
+                        break;
                     }
                     else if(opCode == 712){     //TO-DO: Find rd, rn, and immediate
                         //siged = -312
@@ -418,7 +419,7 @@ public class disassemble {
                         rn = inst.rn;
                         imm = inst.imm;
                         instruction = "ORRI X" + rd + ", X" + rn + ", #" + imm;
-                        break; 
+                        break;
                     }
                     else if(opCode == 836){     //TO-DO: Find rd, rn, and immediate
                         //signed = -188
@@ -429,7 +430,7 @@ public class disassemble {
                         rn = inst.rn;
                         imm = inst.imm;
                         instruction = "SUBI X" + rd + ", X" + rn + ", #" + imm;
-                        break; 
+                        break;
                     }
                     else if(opCode == 964){     //TO-DO: Find rd, rn, and immediate and Set flags(?)
                         //signed = -60
@@ -440,8 +441,8 @@ public class disassemble {
                         rn = inst.rn;
                         imm = inst.imm;
                         instruction = "SUBIS X" + rd + ", X" + rn + ", #" + imm;
-                        break; 
-                    }    
+                        break;
+                    }
                 }
                 else if(v==3){
                     int temp1 = Byte.toUnsignedInt(byteArray[i]);//byte 1
@@ -461,7 +462,7 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "ADD " + "X" + rd + ", X" + rn + ", X" + rm;
-                        break; 
+                        break;
                     }
                     else if(opCode == 1104){    //TO-DO: Find rd, rm, shamt(?) and rn
                         //signed is -944
@@ -473,7 +474,7 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "AND "+ "X" + rd + ", X" + rn + ", X" + rm;
-                        break; 
+                        break;
                     }
                     else if(opCode == 1712){    //TO-DO: Find rd, rm, shamt(?) and rn
                         //signd = -336
@@ -485,7 +486,7 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "BR X" + rn;
-                        break; 
+                        break;
                     }
                     else if(opCode == 2046){    //TO-DO: The rest of the instruction
                         //signed = -2
@@ -497,7 +498,7 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "DUMP";
-                        break; 
+                        break;
                     }
                     else if(opCode == 1616){    //TO-DO: Find rd, rm, shamt(?) and rn
                         //signed -432
@@ -509,7 +510,7 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "EOR "+ "X" + rd + ", X" + rn + ", X" + rm;
-                        break; 
+                        break;
                     }
                     else if(opCode == 2047){    //TO-DO: Find rd, rm, shamt(?) and rn
                         //signed = -1
@@ -521,7 +522,7 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "HALT";
-                        break; 
+                        break;
                     }
                     else if(opCode == 1986){     //TO-DO: Find rt, rn, and dt_address
                         //signed = -62
@@ -532,7 +533,7 @@ public class disassemble {
                         rn = inst.rn;
                         dt_address = inst.dt_address;
                         instruction = "LDUR X" + rt + ", [X" + rn + ", #" + dt_address + "]";
-                        break; 
+                        break;
                     }
                     else if(opCode == 1691){     //TO-DO: Find rd, rm(?), shamt and rn
                         //signed = -357
@@ -543,7 +544,7 @@ public class disassemble {
                         rn = inst.rn;
                         dt_address = inst.dt_address;
                         instruction = "LSL X" + rd + ", X" + rn + ", #" + shamt;
-                        break; 
+                        break;
                     }
                     else if(opCode == 1690){     //TO-DO: Find rd, rm(?), shamt and rn
                         //signed = -358
@@ -555,7 +556,7 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "LSR X" + rd + ", X" + rn + ", #" + shamt;
-                        break; 
+                        break;
                     }
                     else if(opCode == 1360){     //TO-DO: Find rd, rm, shamt(?) and rn
                         //signed -688
@@ -567,7 +568,7 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "ORR "+ "X" + rd + ", X" + rn + ", X" + rm;
-                        break; 
+                        break;
                     }
                     else if(opCode == 1984){     //TO-DO: Find rt, rn, and dt_address
                         //signed -64
@@ -578,7 +579,7 @@ public class disassemble {
                         rn = inst.rn;
                         dt_address = inst.dt_address;
                         instruction = "STUR X"+ rt + ", [X" + rn + ",#" + dt_address + "]";
-                        break; 
+                        break;
                     }
                     else if(opCode == 1624){     //TO-DO: Find rd, rm, shamt(?) and rn
                         //signed -424
@@ -590,7 +591,7 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "SUB "+ "X" + rd + ", X" + rn + ", X" + rm;
-                        break; 
+                        break;
                     }
                     else if(opCode == 1880){     //TO-DO: Find rd, rm, shamt(?), rn, and set flags(?)
                         //signed -168
@@ -602,7 +603,7 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "SUBS "+ "X" + rd + ", X" + rn + ", X" + rm;
-                        break; 
+                        break;
                     }
                     else if(opCode == 1240){     //TO-DO: Find rd, rm, shamt(?) and rn
                         //signed = -808
@@ -614,7 +615,7 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "MUL X" + rd + ", X" + rn + ", X" + rm;
-                        break; 
+                        break;
                     }
                     else if(opCode == 2045){     //TO-DO: Find rd, rm, shamt(?) and rn
                         //signed -3
@@ -626,7 +627,7 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "PRNT" + " X"+rd;
-                        break; 
+                        break;
                     }
                     else if(opCode == 2044){     //TO-DO: Find rd, rm, shamt(?) and rn
                         //signed -4
@@ -638,10 +639,10 @@ public class disassemble {
                         shamt = inst.shamt;
                         rn = inst.rn;
                         instruction = "PRNL";
-                        break; 
+                        break;
                     }
                 }
-                
+
 
             }
             //System.out.println("Instruction: " + instruction);
@@ -652,167 +653,6 @@ public class disassemble {
         }
         return totalInstruction;
     }
-    /*
-    10010001
-    >>3
-    10010
-    00010010
 
-
-     11 bit :
-	        For Opcode: 31 - 31 = 11 bits
-	            example opcode = 10101001010 = -694
-	            byte 1 = 10101001 = -87
-	            byte 2 = 01000110 = 70
-	            shift 2 >> 5
-	            byte 2 = 00000010 = 2
-	            multiply byte 1 by 2^3 because 8 + 3 = 11
-	            byte 1 = -696
-	            byte 1 + byte 2 = -964 = the opcode
-	 	R type:
-	        For Rm: from 20 - 16 = 5 bits
-	            00110 = 6
-	            byte 2 = 01000110
-	            shift 2 << 3
-	            byte 2 = 00110000
-	            shift 2 >> 3
-	            byte 2 = 00000110 = 6
-	        For shamt: from 15 - 10 = 6 bits
-	            000000 = 0
-	            byte 3 = 00000001 = 1
-	            shift 3 >> 2 = 00000000
-	            byte 3 = shamt
-	        For Rn: from 9 - 5 = 5 bits
-	            Rn = 01001 = 9
-	            byte 3 and 4 needed
-	            byte 3 = 00000001 = 1
-	            byte 4 = 00100001
-	            byte 3 << 3
-	            byte 3 = 00001000 = 8
-	            byte 4 >> 5
-	            byte 4 = 00000001 = 1
-	            byte 3 + byte 4 = 9 = Rn
-	        For Rd: from 4 - 0:
-	            Rd = 00001 = 1
-	            byte 4 = 00100001
-	            byte 4 << 3
-	            = 00001000
-	            byte 4 >> 3
-	            = 00000001 = 1 = Rd
-	     D Type:
-	     	For DT_address: from 20 - 12 = 9 bits
-	     		example = 001100110 = 102
-	     	 	byte 2 = 010 00110 = 70
-	     	 	byte 3 = 0110 1010 106
-	     	 	byte 2 << 3 = 00110 000 = 48
-	     	 	byte 2 * 2^1 = 96
-	     	 	byte 3 >> 4 = 0000 0110 = 6
-	     	 	byte 2 + 3 = 102 = example
-	     	For op: from 11-10 = 2 bits
-	     		example = 10 = 2
-	     		byte 3 = 0110 10 10
-	     		byte 3 << 4 = 10 100000
-	     		byte 3 >> 6 = 000000 10 = 2 = example
-	     	For Rn: from 9 - 5 = 5 bits
-	     		example = 10001 = 17
-	     		byte 3 = 011010 10
-	     		byte 3 << 6 = 10 000000
-	     		byte 3 >> 6 = 000000 10
-	     		byte 3 << 3 = 000 10 000 = 16
-	     		byte 4 = 001 11000
-	     		byte 4 >> 5 = 00000 001 = 1
-	     		byte 3 + 4 = 17 = example
-	     	For Rd: from 4 - 0 = 5 bits
-	     		example = 11000 = 24
-	     		byte 4 = 001 11000
-				byte 4 << 3 = 11000 000
-				byte 4 >> 3 = 000 11000 = 24 = example
-		IW Type:
-			For MOV_immediate: 20 - 5 = 16 bits
-				example = 0011 0011 0101 0001 = 13137
-				byte 2 = 010 00110 = 70
-	     	 	byte 3 = 01101010 = 106
-	     	 	byte 4 = 001 11000 = 56
-	     	 	byte 2 << 3 = 00110 000 
-	     	 	byte 2 >> 3 = 000 00110
-	     	 	byte 4 >> 5 = 00000 001
-	     	 	byte 2 * 2^8 = 12288
-	     	 	byte 3 * 2^3 = 848
-	     	 	byte 2 + 3 + 4 = 13137 = example
-	     	For Rd: 4 - 0 = 5 bits
-	     		example = 11000 = 24
-	     		byte 4 = 001 11000 = 56
-	     		byte 4 << 3
-	     		byte 4 >> 3 = 000 11000 = example
-
-	    10 bit :
-	    	For I type:
-	    		For Opcode: 31 - 22 = 10 bits
-	    			example = 1010100101 = -347
-		    		byte 1 = 10101001 = -87
-		            byte 2 = 01 000110 = 70
-		            byte 2 >> 6 == 000000 01
-		            byte 1 * 2^2 = -348
-		            byte 1 + 2 = -347 = example
-		   		For ALU_immediate: 21 - 10 = 12 bits
-		   			example = 000110011010 = 410
-		   			byte 2 = 01 000110 = 70
-		   			byte 3 = 011010 10 = 106
-		   			byte 2 << 2 = 000110 00 = 24
-		   			byte 3 >> 2 = 00 011010 =  26
-		   			byte 2 * 2^4 = 284
-		   			byte 2 + 3 = 410
-		   		For Rn: from 9 - 5 = 5 bits
-		     		example = 10001 = 17
-		     		byte 3 = 011010 10
-		     		byte 3 << 6 = 10 000000
-		     		byte 3 >> 6 = 000000 10
-		     		byte 3 << 3 = 000 10 000 = 16
-		     		byte 4 = 001 11000
-		     		byte 4 >> 5 = 00000 001 = 1
-		     		byte 3 + 4 = 17 = example
-	     		For Rt: from 4 - 0 = 5 bits
-		     		example = 11000 = 24
-		     		byte 4 = 001 11000
-					byte 4 << 3 = 11000 000
-					byte 4 >> 3 = 000 11000 = 24 = example
-	    8 bit:
-	    	For CB type:
-	    		For Opcode: 31 - 24 = 8 bits
-	    			just use byte 1
-	    		For COND_BR_address: 23 - 5: 19 bit
-	    			example = 0100011001101010001 = 144209
-	    			byte 2 = 01000110 = 70
-	    			byte 3 = 01101010 = 106
-	    			byte 4 = 001 11000 = 56
-	    			byte 2 * 2^11 = 143360
-	    			byte 3 * 2^3 = 848
-	    			byte 4 >> 5 = 00000 001 = 1
-	    			byte 2 + 3 + 4 = 144209 = example
-	    		For Rt: from 4 - 0 = 5 bits
-		     		example = 11000 = 24
-		     		byte 4 = 001 11000
-					byte 4 << 3 = 11000 000
-					byte 4 >> 4 = 000 11000 = 24 = example
-	    6 bit : 
-	    	For B type:
-	    		For Opcode: 31 - 26 = 6 bits
-	    			example = 101010 = -22
-	    			byte 1 = 10101001
-	    			byte 1 >> 2 = 00 101010 
-                    byte 1 << 2 == 101010 00
-                    byte 1 * 2^-2 = -22 = example
-	    		For BR_address: 25 - 0: 26 bits
-	    			example = 01010001100110101000111000 = 21391928
-	    			byte 1 = 10101001 = -87
-	    			byte 2 = 01000110 = 70
-	    			byte 3 = 01101010 = 106
-	    			byte 4 = 00111000 = 56
-	    			byte 1 << 6 = 01 000000 = 64
-	    			byte 1 * 2^20 = 67108864
-	    			byte 2 * 2^16 = 4587520
-	    			byte 3 * 2^8 = 27136
-	    			byte 1 + 2 + 3 + 4 = right?
-    */
 }
 
