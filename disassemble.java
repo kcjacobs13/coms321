@@ -1,3 +1,4 @@
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -8,15 +9,15 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 
 public class disassemble {
 	public static void main(String[] args) throws IOException {
-		Path path = Paths.get("assignment1.legv8asm.machine");
+		Scanner sc=new Scanner(System.in);  
+		Path path = Paths.get(sc.next());
 		byte[] fileContents =  Files.readAllBytes(path);
-		System.out.println(fileContents.toString());
         int bit = fileContents[0];
-        System.out.println(getBinaryString(fileContents[0]));
         File file = new File("decoded.legv8asm");
         try {
              file.createNewFile();
@@ -187,17 +188,13 @@ public class disassemble {
         if(temp1 == 3 || temp1 == 2) {
 	        BR_address = BR_address << 2;
 	        BR_address += temp1; //111...(11)temp1
-	        System.out.println("1:" + BR_address );
 	        BR_address = BR_address << 8; //room for temp2
 	        BR_address = BR_address | temp2;
-	        System.out.println("2:"+BR_address);
 	        BR_address = BR_address << 8;
 	        BR_address = BR_address | temp3;
-	        System.out.println("3:"+BR_address);
 	        BR_address = BR_address << 8;
 	        BR_address = BR_address | temp4; //11111111
 	        								 //11100110
-	        System.out.println(BR_address +"= -26?");
         }else {
         	temp2 = Byte.toUnsignedInt(byteArray[start + 1]);//byte 2
             temp3 = Byte.toUnsignedInt(byteArray[start + 2]);//byte 3
